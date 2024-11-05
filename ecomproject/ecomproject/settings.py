@@ -81,7 +81,8 @@ DATABASES = {
         'ENGINE': 'mysql.connector.django',
         'NAME': 'ecommerce',
         'USER': "root",
-        "PASSWORD": 'Shivam@mysql10',
+        "PASSWORD": 'Shivam@mysql1',
+        # "PASSWORD": 'root',
         'HOST': 'localhost',
         'PORT' : 3306
     }
