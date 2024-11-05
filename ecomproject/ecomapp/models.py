@@ -33,8 +33,8 @@ class Product(models.Model):
         return self.name
 
 class Orders(models.Model): 
-    product_id = models.ForeignKey(Product)
-    buyer = models.ForeignKey(Customer)
+    product_id = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
+    buyer = models.ForeignKey(Customer, on_delete=models.DO_NOTHING)
     total_price = models.FloatField()
         
     def __str__(self):
@@ -47,8 +47,8 @@ class Carts(models.Model):
         return "Cart"
     
 class CartItems(models.Model):
-    cart = models.ForeignKey(Carts)
-    product = models.ForeignKey(Product)
+    cart = models.ForeignKey(Carts, on_delete=models.DO_NOTHING)
+    product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
     quantity = models.IntegerField()
 
     def __str__(self):
