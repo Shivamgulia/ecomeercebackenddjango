@@ -2,3 +2,6 @@ django
 djangorestframework
 mysql-connector-python
 django-cors-headers
+djangorestframework_simplejwt
+drf-yasg
+python-dotenv
