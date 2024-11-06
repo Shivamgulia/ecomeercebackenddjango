@@ -1,0 +1,5 @@
+.env*
+*.ecomproject/__pycache__
+*.ecomapp/__pycache__/*
+
+
