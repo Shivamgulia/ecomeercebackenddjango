@@ -5,3 +5,4 @@ django-cors-headers
 djangorestframework_simplejwt
 drf-yasg
 python-dotenv
+bcrypt
