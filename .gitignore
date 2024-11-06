@@ -1,5 +1,5 @@
 .env
-ecomproject/ecomproject/__pycache__
-ecomproject/ecomapp/__pycache__/*
+ecomproject/ecomproject/__pycache__/
+ecomproject/ecomapp/__pycache__/
 
 
