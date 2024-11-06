@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'ecomapp',
     'rest_framework',
-    'corsheaders'
+    'corsheaders',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -78,13 +79,12 @@ WSGI_APPLICATION = 'ecomproject.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'mysql.connector.django',
-        'NAME': 'ecommerce',
-        'USER': "root",
-        "PASSWORD": 'Shivam@mysql1',
-        # "PASSWORD": 'root',
-        'HOST': 'localhost',
-        'PORT' : 3306
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'authdb',
+        'USER': 'root',
+        'PASSWORD':'Sarthak@2002',
+        'HOST':'localhost',
+        'PORT':3306
     }
 }
 
