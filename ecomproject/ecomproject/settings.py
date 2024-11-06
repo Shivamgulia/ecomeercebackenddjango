@@ -94,6 +94,7 @@ user = os.getenv("DBUSER")
 password = os.getenv("DBPASSWORD")
 host = os.getenv("DBHOST")
 port = os.getenv("DBPORT")
+JWT_SECRET_KEY = os.getenv("JWT_SECRET")
 
 DATABASES = {
     'default': {
@@ -171,6 +172,7 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(days=30),
     'SLIDING_TOKEN_REFRESH_LIFETIME_LATE_USER': timedelta(days=1),
     'SLIDING_TOKEN_LIFETIME_LATE_USER': timedelta(days=30),
+    'SIGNING_KEY': JWT_SECRET_KEY,
 }
 
 PASSWORD_HASHERS = [
