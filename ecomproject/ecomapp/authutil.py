@@ -24,7 +24,7 @@ def authenticateCustomer(bearer_token):
 
         user = Customer.objects.filter(id=payload['user_id']).first()
 
-        userdto = {'name':user.name, 'email':user.email, 'address':user.address, 'contact':user.contact}
+        userdto = {'name':user.name, 'email':user.email, 'address':user.address, 'contact':user.contact, 'id': user.id}
         return userdto
 
     except ExpiredSignatureError:
@@ -33,9 +33,6 @@ def authenticateCustomer(bearer_token):
     except InvalidTokenError:
         print("Invalid token.")
         return None
-
-
-
 
 
 
@@ -54,7 +51,7 @@ def authenticateSeller(bearer_token):
 
         user = Seller.objects.filter(id=payload['user_id']).first()
 
-        userdto = {'name':user.name, 'email':user.email, 'address':user.address, 'contact':user.contact}
+        userdto = {'name':user.name, 'email':user.email, 'address':user.address, 'contact':user.contact, 'id': user.id}
         return userdto
 
     except ExpiredSignatureError:
