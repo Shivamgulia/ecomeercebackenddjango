@@ -135,6 +135,45 @@ def customerregister(request):
     )
 
 
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def createproduct(request):
+    name = request.data.get('name')
+    image = request.data.get('image')
+    seller:int = request.data.get('seller')
+    price:float = request.data.get('price')
+    discounted_price:float = request.data.get('discounted_price')
+    description = request.data.get('description')
+
+    new_product = {'name': name, 'image': image, 'seller': seller, 'price': price, 'discounted_price': discounted_price, 'description':description}
+    ser = ProductSerializer(data = new_product)
+    if ser.is_valid():
+        ser.save()
+        return Response(
+            {"detail": "Product Created"},
+            status=status.HTTP_201_CREATED
+        )
+    return Response(
+        {"detail": "Request Failed"},
+        status=status.HTTP_400_BAD_REQUEST
+    )
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def getproducts(request):
+    products = Product.objects.all()
+    
+    # Serialize the products with many=True for a queryset
+    serialized_products = ProductSerializer(products, many=True)
+    
+    # Return the serialized data
+    return Response(
+        {"products": serialized_products.data},
+        status=status.HTTP_200_OK
+    )
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def hello(request):
@@ -152,3 +191,4 @@ def hello(request):
     )
 
     
+
