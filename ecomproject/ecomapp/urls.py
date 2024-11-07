@@ -13,5 +13,6 @@ urlpatterns = [
     path('order/', views.order),
     path('fetchorders/', views.fetchorder),
     path('fetchordersforseller/', views.fetchorderforseller),
-    path('updatecustomer/', views.updatecustomer)
+    path('updatecustomer/', views.updatecustomer),
+    path('updateseller/', views.updateseller)
 ]

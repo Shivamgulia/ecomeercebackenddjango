@@ -232,8 +232,9 @@ def order(request):
     product_id = request.data.get('product_id')
     buyer:int = request.data.get('buyer')
     total_price = request.data.get('total_price')
+    seller:int = request.data.get('seller')
 
-    new_order = {'product_id': product_id, 'buyer': buyer, 'total_price' : total_price}
+    new_order = {'product_id': product_id, 'buyer': buyer, 'total_price' : total_price, 'seller': seller}
     ser = OrdersSerializer(data = new_order)
     if ser.is_valid():
         ser.save()
@@ -349,6 +350,42 @@ def updatecustomer(request):
         ser.save()
         return Response(
             {"detail": "Customer updated successfully"},
+            status=status.HTTP_200_OK
+        )
+    
+    return Response(
+        ser.errors,
+        status=status.HTTP_400_BAD_REQUEST
+    )
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def updateseller(request):
+    token = request.headers.get('Authorization')
+    user = authenticateCustomer(token)
+    
+    if not user:
+        return Response(
+            {"detail": "Request Failed"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    try:
+        seller = Seller.objects.get(id=user['id'])
+    except Seller.DoesNotExist:
+        return Response(
+            {"detail": "Seller not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    address = request.data.get('address')
+    seller.address = address
+
+    ser = CustomerSerializer(instance=seller, data=request.data, partial=True)
+    if ser.is_valid():
+        ser.save()
+        return Response(
+            {"detail": "Seller updated successfully"},
             status=status.HTTP_200_OK
         )
     
