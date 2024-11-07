@@ -11,5 +11,8 @@ urlpatterns = [
     path('hello/', views.hello),
     path('getsellerproducts/', views.getproductsofseller),
     path('order/', views.order),
-    path('fetchorders/', views.fetchorder)
+    path('fetchorders/', views.fetchorder),
+    path('addtocart/',views.addtocart),
+    path('getcartitems/',views.getcartitems),
+    path('deletecartitem/<int:product_id>/', views.deletecartitem, name='delete_cart_item'),
 ]
