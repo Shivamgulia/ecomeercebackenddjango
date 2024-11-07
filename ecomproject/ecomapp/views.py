@@ -30,7 +30,7 @@ def sellerlogin(request):
         is_password_correct = check_password(password, user.password)
         # is_password_correct = password ==  user.password
         if is_password_correct:
-            userdto = {'name':user.name, 'email':user.email, 'address':user.address, 'contact':user.contact}
+            userdto = {'name':user.name, 'email':user.email, 'address':user.address, 'contact':user.contact, 'id':user.id}
             refresh = RefreshToken.for_user(user)
             return Response({
                 'refresh': str(refresh),
@@ -65,7 +65,7 @@ def customerlogin(request):
         is_password_correct = check_password(password, user.password)
 
         if is_password_correct:
-            userdto = {'name':user.name, 'email':user.email, 'address':user.address, 'contact':user.contact}
+            userdto = {'name':user.name, 'email':user.email, 'address':user.address, 'contact':user.contact,'id':user.id}
             refresh = RefreshToken.for_user(user)
             return Response({
                 'refresh': str(refresh),
@@ -267,6 +267,95 @@ def fetchorder(request):
         status=status.HTTP_200_OK
     )
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def fetchorderforseller(request):
+    token = request.headers.get('Authorization')
+    user = authenticateSeller(token)
+    if not user:
+        return Response(
+            {"detail": "Request Failed"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    print(user)
+    seller_orders = Orders.objects.filter(seller=user['id'])
+    return Response(
+        {
+            "orders": OrdersSerializer(seller_orders, many=True).data
+        },
+        status=status.HTTP_200_OK
+    )
+
+
+# @api_view(['POST'])
+# @permission_classes([AllowAny])
+# def updatecustomer(request):
+
+#     token = request.headers.get('Authorization')
+#     user = authenticateCustomer(token)
+
+#     print("hello")
+#     if not user:
+#         return Response(
+#         {"detail": "Request Failed"},
+#         status=status.HTTP_401_UNAUTHORIZED
+#         )
+    
+#     address = request.data.get('address')
+#     updated_user = Customer.objects.filter(id = user['id'])
+#     print(updated_user,"user", user['id'])
+#     print("abc")
+#     updated_user['address'] = address
+#     print(updated_user['id'])
+#     ser = CustomerSerializer(data = updated_user)
+#     if ser.is_valid():
+#         ser.update()
+#         return Response(
+#             {"detail": "Order Completed"},
+#             status=status.HTTP_201_CREATED
+#         )
+    
+#     return Response(
+#         {"detail": "Request Failed"},
+#         status=status.HTTP_400_BAD_REQUEST
+#     )
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def updatecustomer(request):
+    token = request.headers.get('Authorization')
+    user = authenticateCustomer(token)
+    
+    if not user:
+        return Response(
+            {"detail": "Request Failed"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    try:
+        customer = Customer.objects.get(id=user['id'])
+    except Customer.DoesNotExist:
+        return Response(
+            {"detail": "Customer not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    address = request.data.get('address')
+    customer.address = address
+
+    ser = CustomerSerializer(instance=customer, data=request.data, partial=True)
+    if ser.is_valid():
+        ser.save()
+        return Response(
+            {"detail": "Customer updated successfully"},
+            status=status.HTTP_200_OK
+        )
+    
+    return Response(
+        ser.errors,
+        status=status.HTTP_400_BAD_REQUEST
+    )
 
 
 @api_view(['GET'])
