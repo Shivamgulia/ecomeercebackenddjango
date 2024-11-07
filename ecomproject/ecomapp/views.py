@@ -10,12 +10,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
-# from rest_framework.decorators import api_view
 from rest_framework.decorators import api_view, permission_classes
 from .serializer import *
 from rest_framework.permissions import AllowAny
-
-
 from .authutil import *
 
 @api_view(['POST'])
@@ -125,8 +122,13 @@ def customerregister(request):
     ser = CustomerSerializer(data = new_user)
     if ser.is_valid():
         ser.save()
+        new_user = Customer.objects.filter(name = username).first()
+        new_cart = {"buyer" : new_user.id}
+        ser_cart = CartsSerializer(data = new_cart)
+        if ser_cart.is_valid():
+            ser_cart.save()
         return Response(
-            {"detail": "Seller Created"},
+            {"detail": "Customer Created"},
             status=status.HTTP_201_CREATED
         )
     return Response(
@@ -159,19 +161,112 @@ def createproduct(request):
         status=status.HTTP_400_BAD_REQUEST
     )
 
+# @api_view(['GET'])
+# @permission_classes([AllowAny])
+# def getproducts(request):
+#     products = Product.objects.all()
+#     serialized_products = ProductSerializer(products, many=True)
+#     return Response(
+#         {"products": serialized_products.data},
+#         status=status.HTTP_200_OK
+#     )
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def getproducts(request):
+    try:
+        limit = int(request.query_params.get('limit', 10)) 
+        offset = int(request.query_params.get('offset', 0)) 
+    except ValueError:
+        return Response(
+            {"error": "Invalid limit or offset parameter"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     products = Product.objects.all()
+    paginated_products = products[offset:offset + limit]
+    serialized_products = ProductSerializer(paginated_products, many=True)
+
+    response_data = {
+        "count": products.count(),
+        "next": f"{request.build_absolute_uri()}?limit={limit}&offset={offset + limit}" if offset + limit < products.count() else None,
+        "previous": f"{request.build_absolute_uri()}?limit={limit}&offset={max(offset - limit, 0)}" if offset > 0 else None,
+        "products": serialized_products.data
+    }
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def getproductsofseller(request):
+    token = request.headers.get('Authorization')
+    user = authenticateSeller(token)
+    if not user:
+        return Response(
+            {"detail": "Request Failed"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
     
-    # Serialize the products with many=True for a queryset
-    serialized_products = ProductSerializer(products, many=True)
-    
-    # Return the serialized data
+    seller_products = Product.objects.filter(seller=user['id'])
     return Response(
-        {"products": serialized_products.data},
+        {
+            "user": user,
+            "products": ProductSerializer(seller_products, many=True).data
+        },
         status=status.HTTP_200_OK
     )
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def order(request):
+
+    token = request.headers.get('Authorization')
+    user = authenticateCustomer(token)
+
+    if not user:
+        return Response(
+        {"detail": "Request Failed"},
+        status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    product_id = request.data.get('product_id')
+    buyer:int = request.data.get('buyer')
+    total_price = request.data.get('total_price')
+
+    new_order = {'product_id': product_id, 'buyer': buyer, 'total_price' : total_price}
+    ser = OrdersSerializer(data = new_order)
+    if ser.is_valid():
+        ser.save()
+        return Response(
+            {"detail": "Order Completed"},
+            status=status.HTTP_201_CREATED
+        )
+    return Response(
+        {"detail": "Request Failed"},
+        status=status.HTTP_400_BAD_REQUEST
+    )
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def fetchorder(request):
+    token = request.headers.get('Authorization')
+    user = authenticateCustomer(token)
+    if not user:
+        return Response(
+            {"detail": "Request Failed"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    print(user)
+    customer_orders = Orders.objects.filter(buyer=user['id'])
+    return Response(
+        {
+            "user": user,
+            "orders": OrdersSerializer(customer_orders, many=True).data
+        },
+        status=status.HTTP_200_OK
+    )
+
 
 
 @api_view(['GET'])
@@ -179,6 +274,7 @@ def getproducts(request):
 def hello(request):
     token = request.headers.get('Authorization')
     user = authenticateCustomer(token)
+    sellerproducts = Product.objects.filter()
     if not user:
         return Response(
         {"detail": "Request Failed"},
