@@ -14,6 +14,7 @@ from rest_framework.decorators import api_view, permission_classes
 from .serializer import *
 from rest_framework.permissions import AllowAny
 from .authutil import *
+from django.forms.models import model_to_dict
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -219,33 +220,58 @@ def getproductsofseller(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def order(request):
-
+    # Retrieve the token from headers and authenticate the user
     token = request.headers.get('Authorization')
     user = authenticateCustomer(token)
 
+    # If user authentication fails, return an unauthorized response
     if not user:
         return Response(
-        {"detail": "Request Failed"},
-        status=status.HTTP_401_UNAUTHORIZED
+            {"detail": "Request Failed"},
+            status=status.HTTP_401_UNAUTHORIZED
         )
     
+    # Get product_id and buyer from the request data
     product_id = request.data.get('product_id')
-    buyer:int = request.data.get('buyer')
-    total_price = request.data.get('total_price')
-    seller:int = request.data.get('seller')
+    buyer = request.data.get('buyer')
+    
+    # Fetch the product from the database based on product_id
+    try:
+        product = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
+        return Response(
+            {"detail": "Product not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
-    new_order = {'product_id': product_id, 'buyer': buyer, 'total_price' : total_price, 'seller': seller}
-    ser = OrdersSerializer(data = new_order)
+    # Print product details for debugging
+    print("Product details:", model_to_dict(product))
+
+    # Prepare the data for the new order
+    new_order = {
+        'product_id': product_id,
+        'buyer': buyer,
+        'total_price': product.discounted_price,  # Access field with dot notation
+        'seller': product.seller.id  # Use seller's ID (primary key) instead of the object
+    }
+
+    # Initialize the OrdersSerializer with the new order data
+    ser = OrdersSerializer(data=new_order)
+
+    # Check if the serialized data is valid
     if ser.is_valid():
         ser.save()
         return Response(
             {"detail": "Order Completed"},
             status=status.HTTP_201_CREATED
         )
-    return Response(
-        {"detail": "Request Failed"},
-        status=status.HTTP_400_BAD_REQUEST
-    )
+    else:
+        # Print and return serializer errors for debugging
+        print("Serializer errors:", ser.errors)
+        return Response(
+            {"detail": "Request Failed", "errors": ser.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
