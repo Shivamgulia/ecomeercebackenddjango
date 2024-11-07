@@ -520,5 +520,72 @@ def deletecartitem(request, product_id):
         status=status.HTTP_200_OK
     )
 
-    
+@api_view(['DELETE'])
+@permission_classes([AllowAny])  # Ensure that only authenticated users can delete items
+def deleteproduct(request, pid):
 
+    token = request.headers.get('Authorization')
+    user = authenticateSeller(token) 
+    if not user:
+        return Response(
+            {"detail": "Unauthorized request"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    # product_to_be_deleted = Product.objects.filter(id=pid)
+    
+    try:
+        product = Product.objects.get(id=pid)
+        
+        # Delete only the orders related to the product
+        Orders.objects.filter(product_id=product).delete()
+        
+        # Now delete the product itself
+        product.delete()
+        
+        return Response(
+            {"detail": "Product and related orders deleted successfully"},
+            status=status.HTTP_204_NO_CONTENT
+        )
+    
+    except Product.DoesNotExist:
+        return Response(
+            {"detail": "Product not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {"detail": str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def updateproduct(request):
+    token = request.headers.get('Authorization')
+    user = authenticateSeller(token)
+    
+    if not user:
+        return Response(
+            {"detail": "Request Failed"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    product_id = request.data.get('product_id')
+    discounted_price = request.data.get('discounted_price')
+    
+    product = Product.objects.get(id=product_id)
+    
+    product.discounted_price = discounted_price
+
+    ser = ProductSerializer(instance=product, data=request.data, partial=True)
+    if ser.is_valid():
+        ser.save()
+        return Response(
+            {"detail": "Product updated successfully"},
+            status=status.HTTP_200_OK
+        )
+    
+    return Response(
+        ser.errors,
+        status=status.HTTP_400_BAD_REQUEST
+    )
