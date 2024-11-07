@@ -122,6 +122,11 @@ def customerregister(request):
     ser = CustomerSerializer(data = new_user)
     if ser.is_valid():
         ser.save()
+        new_user = Customer.objects.filter(name = username).first()
+        new_cart = {"buyer" : new_user.id}
+        ser_cart = CartsSerializer(data = new_cart)
+        if ser_cart.is_valid():
+            ser_cart.save()
         return Response(
             {"detail": "Customer Created"},
             status=status.HTTP_201_CREATED

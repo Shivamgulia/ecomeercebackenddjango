@@ -36,6 +36,7 @@ class Orders(models.Model):
     product_id = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
     buyer = models.ForeignKey(Customer, on_delete=models.DO_NOTHING)
     total_price = models.FloatField()
+    seller = models.ForeignKey(Seller, on_delete=models.DO_NOTHING)
         
     def __str__(self):
         return self.name
