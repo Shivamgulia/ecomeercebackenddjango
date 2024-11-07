@@ -15,6 +15,9 @@ from rest_framework.decorators import api_view, permission_classes
 from .serializer import *
 from rest_framework.permissions import AllowAny
 
+
+from .authutil import *
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def sellerlogin(request):
@@ -63,7 +66,7 @@ def customerlogin(request):
         user = Customer.objects.filter(name=username).first()
         print(user)
         is_password_correct = check_password(password, user.password)
-        # is_password_correct = password ==  user.password
+
         if is_password_correct:
             userdto = {'name':user.name, 'email':user.email, 'address':user.address, 'contact':user.contact}
             refresh = RefreshToken.for_user(user)
@@ -132,6 +135,7 @@ def customerregister(request):
     )
 
 
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def createproduct(request):
@@ -168,4 +172,23 @@ def getproducts(request):
         {"products": serialized_products.data},
         status=status.HTTP_200_OK
     )
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def hello(request):
+    token = request.headers.get('Authorization')
+    user = authenticateCustomer(token)
+    if not user:
+        return Response(
+        {"detail": "Request Failed"},
+        status=status.HTTP_401_UNAUTHORIZED
+        )   
+
+    return Response(
+        {"user": user},
+        status=status.HTTP_200_OK
+    )
+
+    
 

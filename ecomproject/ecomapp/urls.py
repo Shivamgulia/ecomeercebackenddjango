@@ -7,5 +7,6 @@ urlpatterns = [
     path('sellerregister/', views.sellerregister),
     path('customerregister/', views.customerregister),
     path('createproduct/', views.createproduct),
-    path('getproducts/', views.getproducts)
+    path('getproducts/', views.getproducts),
+    path('hello/', views.hello)
 ]
