@@ -8,5 +8,8 @@ urlpatterns = [
     path('customerregister/', views.customerregister),
     path('createproduct/', views.createproduct),
     path('getproducts/', views.getproducts),
-    path('hello/', views.hello)
+    path('hello/', views.hello),
+    path('getsellerproducts/', views.getproductsofseller),
+    path('order/', views.order),
+    path('fetchorders/', views.fetchorder)
 ]
