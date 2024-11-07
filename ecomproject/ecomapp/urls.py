@@ -11,5 +11,7 @@ urlpatterns = [
     path('hello/', views.hello),
     path('getsellerproducts/', views.getproductsofseller),
     path('order/', views.order),
-    path('fetchorders/', views.fetchorder)
+    path('fetchorders/', views.fetchorder),
+    path('fetchordersforseller/', views.fetchorderforseller),
+    path('updatecustomer/', views.updatecustomer)
 ]
