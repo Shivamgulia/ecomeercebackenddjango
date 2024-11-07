@@ -183,3 +183,14 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',    # Fallback
 ]
 CORS_ALLOW_ALL_ORIGINS = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',  
+        'rest_framework.throttling.AnonRateThrottle',  
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '5/min',  
+        'anon': '2/min',  
+    },
+}
