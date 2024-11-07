@@ -232,7 +232,7 @@ def order(request):
     product_id = request.data.get('product_id')
     buyer:int = request.data.get('buyer')
     total_price = request.data.get('total_price')
-
+    
     new_order = {'product_id': product_id, 'buyer': buyer, 'total_price' : total_price}
     ser = OrdersSerializer(data = new_order)
     if ser.is_valid():
@@ -372,6 +372,114 @@ def hello(request):
 
     return Response(
         {"user": user},
+        status=status.HTTP_200_OK
+    )
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def addtocart(request):
+    # Retrieve token and authenticate user
+    token = request.headers.get('Authorization')
+    user = authenticateCustomer(token)
+    
+    # If user is not authenticated, return an unauthorized response
+    if not user:
+        return Response(
+            {"detail": "Unauthorized"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    # Retrieve product list from request data
+    product_list = request.data.get('products', [])
+    
+    if not product_list:
+        return Response(
+            {"detail": "Product list is empty or missing"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Get or create a cart for the authenticated user
+    cart = Carts.objects.filter(buyer=user['id']).first()
+    
+    # Iterate through each item in the product list and add to cart items
+    for item in product_list:
+        product_id = item.get('product_id')
+        quantity = item.get('quantity', 1)
+        
+        try:
+            product = Product.objects.get(id=product_id)
+            CartItems.objects.create(cart=cart, product=product, quantity=quantity)
+        except Product.DoesNotExist:
+            return Response(
+                {"detail": f"Product with ID {product_id} does not exist"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    return Response(
+        {"detail": "Items added to cart successfully"},
+        status=status.HTTP_201_CREATED
+    )
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def getcartitems(request):
+    # Retrieve the token from the headers and authenticate user
+    token = request.headers.get('Authorization')
+    user = authenticateCustomer(token) 
+    if not user:
+        return Response(
+            {"detail": "Unauthorized request"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    try:
+        # Get the user's cart
+        cart = Carts.objects.get(buyer=user['id'])
+        cart_items = CartItems.objects.filter(cart=cart)
+        
+        # Serialize the cart items
+        serialized_cart_items = CartItemSerializer(cart_items, many=True)
+        return Response(serialized_cart_items.data, status=status.HTTP_200_OK)
+        
+    except Carts.DoesNotExist:
+        return Response(
+            {"detail": "Cart not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+@api_view(['DELETE'])
+@permission_classes([AllowAny])  # Ensure that only authenticated users can delete items
+def deletecartitem(request, product_id):
+
+    token = request.headers.get('Authorization')
+    user = authenticateCustomer(token) 
+    if not user:
+        return Response(
+            {"detail": "Unauthorized request"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    try:
+        # Get the customer's active cart
+        cart = Carts.objects.get(buyer=user['id'])
+    except Carts.DoesNotExist:
+        return Response(
+            {"detail": "Cart not found for this user."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    cart_items = CartItems.objects.filter(cart=cart, product__id=product_id)
+    
+    if not cart_items.exists():
+        return Response(
+            {"detail": "Product not found in your cart."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    # Delete all matching CartItems
+    deleted_count, _ = cart_items.delete()
+    return Response(
+        {"detail": f"{deleted_count} item(s) removed from your cart."},
         status=status.HTTP_200_OK
     )
 
