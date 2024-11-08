@@ -273,11 +273,35 @@ def order(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+# @api_view(['GET'])
+# @permission_classes([AllowAny])
+# def fetchorder(request):
+#     token = request.headers.get('Authorization')
+#     user = authenticateCustomer(token)
+#     if not user:
+#         return Response(
+#             {"detail": "Request Failed"},
+#             status=status.HTTP_401_UNAUTHORIZED
+#         )
+    
+#     print(user)
+#     customer_orders = Orders.objects.filter(buyer=user['id'])
+#     products = []
+#     customer_orders.map()
+#     return Response(
+#         {
+#             "user": user,
+#             "orders": OrdersSerializer(customer_orders, many=True).data
+#         },
+#         status=status.HTTP_200_OK
+#     )
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def fetchorder(request):
     token = request.headers.get('Authorization')
     user = authenticateCustomer(token)
+    
     if not user:
         return Response(
             {"detail": "Request Failed"},
@@ -285,11 +309,18 @@ def fetchorder(request):
         )
     
     print(user)
-    customer_orders = Orders.objects.filter(buyer=user['id'])
+    customer_orders = Orders.objects.filter(buyer=user['id']).select_related('product_id')
+    
+    products = []
+    for order in customer_orders:
+        product_data = ProductSerializer(order.product_id).data  # serialize the product
+        products.append(product_data)
+
     return Response(
         {
             "user": user,
-            "orders": OrdersSerializer(customer_orders, many=True).data
+            "orders": OrdersSerializer(customer_orders, many=True).data,
+            "products": products  # include products list in the response
         },
         status=status.HTTP_200_OK
     )
@@ -299,6 +330,7 @@ def fetchorder(request):
 def fetchorderforseller(request):
     token = request.headers.get('Authorization')
     user = authenticateSeller(token)
+    
     if not user:
         return Response(
             {"detail": "Request Failed"},
@@ -306,47 +338,23 @@ def fetchorderforseller(request):
         )
     
     print(user)
-    seller_orders = Orders.objects.filter(seller=user['id'])
+    seller_orders = Orders.objects.filter(seller=user['id']).select_related('product_id')
+    
+    # Collect all unique products related to the seller's orders
+    products = []
+    for order in seller_orders:
+        product_data = ProductSerializer(order.product_id).data  # serialize the product
+        products.append(product_data)
+
     return Response(
         {
-            "orders": OrdersSerializer(seller_orders, many=True).data
+            "orders": OrdersSerializer(seller_orders, many=True).data,
+            "products": products  # include products list in the response
         },
         status=status.HTTP_200_OK
     )
 
 
-# @api_view(['POST'])
-# @permission_classes([AllowAny])
-# def updatecustomer(request):
-
-#     token = request.headers.get('Authorization')
-#     user = authenticateCustomer(token)
-
-#     print("hello")
-#     if not user:
-#         return Response(
-#         {"detail": "Request Failed"},
-#         status=status.HTTP_401_UNAUTHORIZED
-#         )
-    
-#     address = request.data.get('address')
-#     updated_user = Customer.objects.filter(id = user['id'])
-#     print(updated_user,"user", user['id'])
-#     print("abc")
-#     updated_user['address'] = address
-#     print(updated_user['id'])
-#     ser = CustomerSerializer(data = updated_user)
-#     if ser.is_valid():
-#         ser.update()
-#         return Response(
-#             {"detail": "Order Completed"},
-#             status=status.HTTP_201_CREATED
-#         )
-    
-#     return Response(
-#         {"detail": "Request Failed"},
-#         status=status.HTTP_400_BAD_REQUEST
-#     )
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
