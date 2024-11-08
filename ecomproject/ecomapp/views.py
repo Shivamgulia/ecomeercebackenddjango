@@ -578,6 +578,7 @@ def deleteproduct(request, pid):
         
         # Delete only the orders related to the product
         Orders.objects.filter(product_id=product).delete()
+        CartItems.objects.filter(product_id=product).delete()
         
         # Now delete the product itself
         product.delete()
