@@ -15,6 +15,7 @@ from .serializer import *
 from rest_framework.permissions import AllowAny
 from .authutil import *
 from django.forms.models import model_to_dict
+from .cartutil import *
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -257,10 +258,11 @@ def order(request):
 
     # Initialize the OrdersSerializer with the new order data
     ser = OrdersSerializer(data=new_order)
-
+    deleteitemsfromcart(user, product_id)
     # Check if the serialized data is valid
     if ser.is_valid():
         ser.save()
+
         return Response(
             {"detail": "Order Completed"},
             status=status.HTTP_201_CREATED
@@ -272,29 +274,6 @@ def order(request):
             {"detail": "Request Failed", "errors": ser.errors},
             status=status.HTTP_400_BAD_REQUEST
         )
-
-# @api_view(['GET'])
-# @permission_classes([AllowAny])
-# def fetchorder(request):
-#     token = request.headers.get('Authorization')
-#     user = authenticateCustomer(token)
-#     if not user:
-#         return Response(
-#             {"detail": "Request Failed"},
-#             status=status.HTTP_401_UNAUTHORIZED
-#         )
-    
-#     print(user)
-#     customer_orders = Orders.objects.filter(buyer=user['id'])
-#     products = []
-#     customer_orders.map()
-#     return Response(
-#         {
-#             "user": user,
-#             "orders": OrdersSerializer(customer_orders, many=True).data
-#         },
-#         status=status.HTTP_200_OK
-#     )
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
