@@ -1,0 +1,68 @@
+Introduction:
+
+In this presentation, we'll be outlining the core database structure of an eCommerce application. The goal of this system is to provide an efficient way to manage customers, sellers, products, and the ordering process in an online store.
+
+An eCommerce platform needs to track multiple key entities, including users (customers), products, and orders. The system should also support the shopping cart mechanism, where customers can add products, modify quantities, and eventually place orders. This database design focuses on six key tables to handle these tasks:
+
+Customer
+Seller
+Product
+Order
+Cart
+Cart Items
+
+Each of these tables plays a vital role in ensuring the system runs smoothly, from product listings to order fulfillment.
+
+1. Customer Table
+Purpose: Stores information about users shopping on the platform.
+Key Fields: customer_id, name, email, address, contact, password.
+2. Seller Table
+Purpose: Stores information about sellers who list products.
+Key Fields: seller_id, name, email, address, contact,password.
+3. Product Table
+Purpose: Stores details about the products available for sale.
+Key Fields: product_id, name, description, price, discounted_price, image, seller_id.
+4. Order Table
+Purpose: Stores customer orders and their details.
+Key Fields: order_id, buyer_id, product_id, total_price.
+5. Cart Table
+Purpose: Stores the shopping cart for each customer.
+Key Fields: cart_id, buyer_id.
+6. Cart Items Table
+Purpose: Stores the individual items in a customer’s cart before checkout.
+Key Fields: cart_item_id, cart_id, product_id, quantity.
+
+How It Works:
+
+Customer: When a customer signs up, they have a Cart where they can add products.
+Cart: Products are stored in the Cart Items table with quantities.
+Order: Once the customer checks out, the Order table records the purchase, linking to products in the Cart and updating the Product stock.
+Seller: Products are linked to a Seller, and each product can be purchased by customers.
+
+Relationships:
+
+Customer → Cart → Cart Items: Each customer has a cart, and each cart has multiple products.
+Product → Seller: Products are listed by sellers.
+Order → Customer: Each order is associated with a customer.
+
+This database structure is designed to efficiently manage the fundamental operations of an eCommerce platform, allowing for smooth customer shopping experiences, order management, and product listings.
+
+We are using django in backend.
+
+Benefits of using django:
+
+1. Fast Development
+Django comes with many built-in features (like an admin panel, authentication, and forms), which means you can build your app faster without having to code everything from scratch.
+
+2. Security
+It has strong security features, like protection against SQL injection, cross-site scripting (XSS), and cross-site request forgery (CSRF), so your app is safer by default.
+
+3. Scalability
+Django can handle a lot of traffic and scale easily, so it's good for both small projects and large, high-traffic websites.
+
+4. Database Management (ORM)
+Django has a built-in system (ORM) that lets you interact with databases using Python code, not raw SQL, making it easier to manage data.
+
+5. Built-in Tools
+Django has tools for handling things like URLs, templates (HTML rendering), forms, and user authentication out-of-the-box, saving time and effort.
+
