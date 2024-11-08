@@ -315,39 +315,6 @@ def fetchorderforseller(request):
     )
 
 
-# @api_view(['POST'])
-# @permission_classes([AllowAny])
-# def updatecustomer(request):
-
-#     token = request.headers.get('Authorization')
-#     user = authenticateCustomer(token)
-
-#     print("hello")
-#     if not user:
-#         return Response(
-#         {"detail": "Request Failed"},
-#         status=status.HTTP_401_UNAUTHORIZED
-#         )
-    
-#     address = request.data.get('address')
-#     updated_user = Customer.objects.filter(id = user['id'])
-#     print(updated_user,"user", user['id'])
-#     print("abc")
-#     updated_user['address'] = address
-#     print(updated_user['id'])
-#     ser = CustomerSerializer(data = updated_user)
-#     if ser.is_valid():
-#         ser.update()
-#         return Response(
-#             {"detail": "Order Completed"},
-#             status=status.HTTP_201_CREATED
-#         )
-    
-#     return Response(
-#         {"detail": "Request Failed"},
-#         status=status.HTTP_400_BAD_REQUEST
-#     )
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def updatecustomer(request):
@@ -500,6 +467,8 @@ def getcartitems(request):
         # Get the user's cart
         cart = Carts.objects.get(buyer=user['id'])
         cart_items = CartItems.objects.filter(cart=cart)
+
+        print(cart_items)
         
         # Serialize the cart items
         serialized_cart_items = CartItemSerializer(cart_items, many=True)
