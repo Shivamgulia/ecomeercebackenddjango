@@ -441,18 +441,15 @@ def hello(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def addtocart(request):
-    # Retrieve token and authenticate user
     token = request.headers.get('Authorization')
     user = authenticateCustomer(token)
     
-    # If user is not authenticated, return an unauthorized response
     if not user:
         return Response(
             {"detail": "Unauthorized"},
             status=status.HTTP_401_UNAUTHORIZED
         )
     
-    # Retrieve product list from request data
     product_list = request.data.get('products', [])
     
     if not product_list:
@@ -461,17 +458,26 @@ def addtocart(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Get or create a cart for the authenticated user
     cart = Carts.objects.filter(buyer=user['id']).first()
     
-    # Iterate through each item in the product list and add to cart items
+    cart_item_responses = []  
+
     for item in product_list:
         product_id = item.get('product_id')
         quantity = item.get('quantity', 1)
-        
+        image_url = item.get('image') 
+
         try:
             product = Product.objects.get(id=product_id)
-            CartItems.objects.create(cart=cart, product=product, quantity=quantity)
+           
+            cart_item = CartItems.objects.create(cart=cart, product=product, quantity=quantity)
+            
+            cart_item_responses.append({
+                "product_id": product.id,
+                "name": product.name,
+                "quantity": quantity,
+                "image": image_url  
+            })
         except Product.DoesNotExist:
             return Response(
                 {"detail": f"Product with ID {product_id} does not exist"},
@@ -479,7 +485,7 @@ def addtocart(request):
             )
 
     return Response(
-        {"detail": "Items added to cart successfully"},
+        {"detail": "Items added to cart successfully", "items": cart_item_responses},
         status=status.HTTP_201_CREATED
     )
 
@@ -487,7 +493,7 @@ def addtocart(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def getcartitems(request):
-    # Retrieve the token from the headers and authenticate user
+    
     token = request.headers.get('Authorization')
     user = authenticateCustomer(token) 
     if not user:

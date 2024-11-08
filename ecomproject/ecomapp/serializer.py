@@ -32,6 +32,7 @@ class CartsSerializer(serializers.ModelSerializer):
         fields = '__all__'  
 
 class CartItemSerializer(serializers.ModelSerializer):
+    product_image = serializers.SerializerMethodField()
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_price = serializers.FloatField(source='product.price', read_only=True)
     product_discounted_price = serializers.FloatField(source='product.discounted_price', read_only=True)
@@ -39,7 +40,11 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartItems
-        fields = ['product', 'product_name', 'product_price', 'product_discounted_price', 'quantity', 'total_price']
+        fields = ['product', 'product_name', 'product_price', 'product_discounted_price', 'quantity', 'total_price','product_image']
 
     def get_total_price(self, obj):
         return obj.quantity * obj.product.discounted_price
+    
+    def get_product_image(self, obj):
+       
+        return obj.product.image

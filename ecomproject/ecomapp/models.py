@@ -23,7 +23,7 @@ class Seller(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=50) 
-    image = models.TextField()
+    image = models.URLField()
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE)
     price = models.FloatField()
     discounted_price = models.FloatField()
